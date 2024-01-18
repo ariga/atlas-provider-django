@@ -53,6 +53,8 @@ class MockMigrationLoader(MigrationLoader):
         super().__init__(connection, replace_migrations, load)
 
     # The method is almost the same as the original one, but it doesn't check if the migrations are applied or not.
+    # Copied from Django's MigrationLoader class
+    # Code licensed under the BSD 3-Clause License: https://github.com/django/django/blob/main/LICENSE
     def build_graph(self):
         self.load_disk()
         self.applied_migrations = {}
@@ -125,6 +127,8 @@ class MockMigrationLoader(MigrationLoader):
 
 
 # Override the handle method of the sqlmigrate command in order to get the sql statements without db connection.
+# Copied from Django's sqlmigrate command
+# Code licensed under the BSD 3-Clause License: https://github.com/django/django/blob/main/LICENSE
 def mock_handle(self, *args, **options):
     connection = get_connection_by_dialect(current_dialect)
     loader = MockMigrationLoader(connection, replace_migrations=False, load=False)
