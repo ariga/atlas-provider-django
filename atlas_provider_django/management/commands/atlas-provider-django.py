@@ -8,6 +8,7 @@ from django.db.migrations.exceptions import NodeNotFoundError
 from django.db.migrations.graph import MigrationGraph
 from django.db.migrations.loader import MigrationLoader, AmbiguityError
 from django.core.management.base import BaseCommand, CommandError
+from django.core.management.commands.sqlmigrate import Command as SqlMigrateCommand
 from django.db.backends.sqlite3.base import DatabaseWrapper as Sqlite3DatabaseWrapper
 from django.db.backends.sqlite3.schema import DatabaseSchemaEditor as SqliteSchemaEditor
 
@@ -169,7 +170,6 @@ class Command(BaseCommand):
         parser.add_argument("--dialect", type=Dialect, choices=list(Dialect), help="The database dialect to use.",
                             default=Dialect.sqlite)
 
-    from django.core.management.commands.sqlmigrate import Command as SqlMigrateCommand
     SqlMigrateCommand.handle = mock_handle
 
     def handle(self, *args, **options):
@@ -195,7 +195,6 @@ class Command(BaseCommand):
                 )
                 migrations += out.getvalue()
             except Exception as e:
-                # print traceback.format_exc()
                 traceback.print_exc()
                 self.stderr.write(
                     f"failed to get migration {app_name} {migration_name}, {e}"
