@@ -1,4 +1,3 @@
-import traceback
 from enum import Enum
 from io import StringIO
 
@@ -21,7 +20,11 @@ class Dialect(Enum):
         return self.value
 
 
-# Returns the database connection wrapper for the given dialect
+current_dialect = Dialect.sqlite
+
+
+# Returns the database connection wrapper for the given dialect.
+# Mocks some methods in order to get the sql statements without db connection.
 def get_connection_by_dialect(dialect):
     if dialect == Dialect.sqlite:
         conn = Sqlite3DatabaseWrapper({
@@ -32,12 +35,9 @@ def get_connection_by_dialect(dialect):
         return conn
 
 
-current_dialect = Dialect.sqlite
-
-
-# Override the build_graph method of the MigrationLoader class in order to get the sql statements without db connection
+# Override the build_graph method of the MigrationLoader class in order to get the sql statements without db connection.
+# The method is almost the same as the original one, but it doesn't check if the migrations are applied or not.
 def mock_build_graph(self):
-    # Load disk data
     self.load_disk()
     self.applied_migrations = {}
     self.graph = MigrationGraph()
@@ -90,7 +90,8 @@ def mock_build_graph(self):
     self.graph.ensure_not_cyclic()
 
 
-# Override the collect_sql method of the MigrationLoader class in order to get the sql statements without db connection
+# Override the collect_sql method of the MigrationLoader class in order to get the sql statements without db connection.
+# The method is almost the same as the original one, but it doesn't check if atomic transactions are enabled or not.
 def mock_collect_sql(self, plan):
     statements = []
     state = None
@@ -109,7 +110,7 @@ def mock_collect_sql(self, plan):
     return statements
 
 
-# Override the handle method of the sqlmigrate command in order to get the sql statements without db connection
+# Override the handle method of the sqlmigrate command in order to get the sql statements without db connection.
 def mock_handle(self, *args, **options):
     connection = get_connection_by_dialect(current_dialect)
     loader = MigrationLoader(connection, replace_migrations=False, load=False)
@@ -183,11 +184,8 @@ class Command(BaseCommand):
                 )
                 migrations += out.getvalue()
             except Exception as e:
-                traceback.print_exc()
                 self.stderr.write(
-                    self.style.ERROR(
-                        f"failed to get migration {app_name} {migration_name}, {e}"
-                    )
+                    f"failed to get migration {app_name} {migration_name}, {e}"
                 )
                 exit(1)
 
