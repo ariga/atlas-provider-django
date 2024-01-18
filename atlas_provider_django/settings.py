@@ -1,1 +1,1 @@
-from django.conf import settings as global_settings
+INSTALLED_APPS = ["atlas_provider_django"]
