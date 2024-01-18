@@ -134,7 +134,7 @@ def mock_handle(self, *args, **options):
     loader = MockMigrationLoader(connection, replace_migrations=False, load=False)
     loader.build_graph()
 
-    app_label, migration_name = options["app_label"], options["migration_name"]
+    app_label, migration_name = options.get("app_label"), options.get("migration_name")
     try:
         apps.get_app_config(app_label)
     except LookupError as err:
@@ -155,7 +155,8 @@ def mock_handle(self, *args, **options):
         )
 
     target = (app_label, migration.name)
-    plan = [(loader.graph.nodes[target], False)]
+    nodes = loader.graph.nodes.get(target)
+    plan = [(nodes, False)]
     sql_statements = loader.collect_sql(plan)
     return "\n".join(sql_statements)
 
@@ -178,7 +179,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         global current_dialect
-        current_dialect = options["dialect"]
+        current_dialect = options.get("dialect", Dialect.sqlite)
         migrations = self.get_migrations()
         print(migrations)
 
