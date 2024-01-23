@@ -4,6 +4,7 @@ from django.db.migrations.loader import MigrationLoader
 from django.apps import apps
 
 
+# Creates the migrations of the installed apps from empty baseline and returns them as a dictionary
 def get_migrations():
     autodetector = MigrationAutodetector(
         ProjectState(),

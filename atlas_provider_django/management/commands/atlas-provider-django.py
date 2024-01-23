@@ -4,9 +4,8 @@ from io import StringIO
 
 from django.apps import apps
 from django.core.management import call_command
-from django.db.migrations.exceptions import NodeNotFoundError
 from django.db.migrations.graph import MigrationGraph
-from django.db.migrations.loader import MigrationLoader, AmbiguityError
+from django.db.migrations.loader import MigrationLoader
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.commands.sqlmigrate import Command as SqlMigrateCommand
 from django.db.backends.sqlite3.base import DatabaseWrapper as Sqlite3DatabaseWrapper
@@ -103,64 +102,20 @@ class MockMigrationLoader(MigrationLoader):
     def __init__(self, connection, replace_migrations=False, load=False):
         super().__init__(connection, replace_migrations, load)
 
-    # The method is almost the same as the original one, but it doesn't check if the migrations are applied or not.
-    # Copied from Django's MigrationLoader class: https://github.com/django/django/blob/8a1727dc7f66db7f0131d545812f77544f35aa57/django/db/migrations/loader.py#L222-L305
-    # Code licensed under the BSD 3-Clause License: https://github.com/django/django/blob/main/LICENSE
     def build_graph(self):
         self.disk_migrations = get_migrations()
         self.applied_migrations = {}
         self.unmigrated_apps = set()
         self.migrated_apps = set()
         self.graph = MigrationGraph()
-        self.replacements = {}
         for key, migration in self.disk_migrations.items():
             self.graph.add_node(key, migration)
-            if migration.replaces:
-                self.replacements[key] = migration
-        for key, migration in self.disk_migrations.items():
-            self.add_internal_dependencies(key, migration)
-        for key, migration in self.disk_migrations.items():
-            self.add_external_dependencies(key, migration)
-        if self.replace_migrations:
-            for key, migration in self.replacements.items():
-                applied_statuses = [
-                    (target in self.applied_migrations) for target in migration.replaces
-                ]
-                if all(applied_statuses):
-                    self.applied_migrations[key] = migration
-                else:
-                    self.applied_migrations.pop(key, None)
-                if all(applied_statuses) or (not any(applied_statuses)):
-                    self.graph.remove_replaced_nodes(key, migration.replaces)
-                else:
-                    self.graph.remove_replacement_node(key, migration.replaces)
-        try:
-            self.graph.validate_consistency()
-        except NodeNotFoundError as exc:
-            reverse_replacements = {}
-            for key, migration in self.replacements.items():
-                for replaced in migration.replaces:
-                    reverse_replacements.setdefault(replaced, set()).add(key)
-            if exc.node in reverse_replacements:
-                candidates = reverse_replacements.get(exc.node, set())
-                is_replaced = any(
-                    candidate in self.graph.nodes for candidate in candidates
-                )
-                if not is_replaced:
-                    tries = ", ".join("%s.%s" % c for c in candidates)
-                    raise NodeNotFoundError(
-                        "Migration {0} depends on nonexistent node ('{1}', '{2}'). "
-                        "Django tried to replace migration {1}.{2} with any of [{3}] "
-                        "but wasn't able to because some of the replaced migrations "
-                        "are already applied.".format(
-                            exc.origin, exc.node[0], exc.node[1], tries
-                        ),
-                        exc.node,
-                    ) from exc
-            raise
+        self.graph.validate_consistency()
         self.graph.ensure_not_cyclic()
 
     # The method is almost the same as the original one, but it doesn't check if atomic transactions are enabled or not.
+    # Copied from Django's MigrationLoader class: https://github.com/django/django/blob/8a1727dc7f66db7f0131d545812f77544f35aa57/django/db/migrations/loader.py#L365-L385
+    # Code licensed under the BSD 3-Clause License: https://github.com/django/django/blob/main/LICENSE
     def collect_sql(self, plan):
         statements = []
         state = None
@@ -196,7 +151,7 @@ def mock_handle(self, *args, **options):
         migration = loader.get_migration_by_prefix(app_label, migration_name)
     except KeyError:
         raise CommandError(
-            "Cannot find a migration matching '%s' from app1 '%s'. Is it in "
+            "Cannot find a migration matching '%s' from app '%s'. Is it in "
             "INSTALLED_APPS?" % (migration_name, app_label)
         )
 
