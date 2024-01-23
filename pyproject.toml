@@ -9,6 +9,10 @@ readme = "README.md"
 python = "^3.11"
 django = ">=4.2"
 
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1.14"
+psycopg2-binary = "^2.9.9"
+mysqlclient = "^2.2.1"
 
 [build-system]
 requires = ["poetry-core"]
