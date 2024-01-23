@@ -30,9 +30,11 @@ class MockSqliteSchemaEditor(SqliteSchemaEditor):
         super().__init__(*args, **kwargs)
 
     def __enter__(self):
+        # Running the __enter__ method of the grandparent class.
         return super(SqliteSchemaEditor, self).__enter__()
 
     def __exit__(self, exc_type, exc_value, traceback):
+        # Running the __exit__ method of the grandparent class.
         return super(SqliteSchemaEditor, self).__exit__(exc_type, exc_value, traceback)
 
 
