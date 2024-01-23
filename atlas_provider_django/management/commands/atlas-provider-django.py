@@ -11,6 +11,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.core.management.commands.sqlmigrate import Command as SqlMigrateCommand
 from django.db.backends.sqlite3.base import DatabaseWrapper as Sqlite3DatabaseWrapper
 from django.db.backends.sqlite3.schema import DatabaseSchemaEditor as SqliteSchemaEditor
+from django.db.backends.postgresql.schema import DatabaseSchemaEditor as PGDatabaseSchemaEditor
+from django.db.backends.postgresql.base import DatabaseWrapper as PGDatabaseWrapper
 
 
 class Dialect(str, Enum):
@@ -38,6 +40,14 @@ class MockSqliteSchemaEditor(SqliteSchemaEditor):
         return super(SqliteSchemaEditor, self).__exit__(exc_type, exc_value, traceback)
 
 
+class MockPGDatabaseSchemaEditor(PGDatabaseSchemaEditor):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def execute(self, sql, params=()):
+        return super(PGDatabaseSchemaEditor, self).execute(sql, params)
+
+
 # Returns the database connection wrapper for the given dialect.
 # Mocks some methods in order to get the sql statements without db connection.
 def get_connection_by_dialect(dialect):
@@ -46,6 +56,12 @@ def get_connection_by_dialect(dialect):
             "ENGINE": "django.db.backends.sqlite3",
         }, "sqlite3")
         conn.SchemaEditorClass = MockSqliteSchemaEditor
+        return conn
+    elif dialect == Dialect.postgresql:
+        conn = PGDatabaseWrapper({
+            "ENGINE": "django.db.backends.postgresql",
+        }, "postgresql")
+        conn.SchemaEditorClass = MockPGDatabaseSchemaEditor
         return conn
 
 
