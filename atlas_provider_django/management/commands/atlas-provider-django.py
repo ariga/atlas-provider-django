@@ -180,10 +180,24 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         global current_dialect
         current_dialect = options.get("dialect", Dialect.sqlite)
-        migrations = self.get_migrations()
-        print(migrations)
+        self.create_migrations()
+        print(self.get_ddl())
 
-    def get_migrations(self):
+    def create_migrations(self):
+        try:
+            call_command(
+                "makemigrations",
+                "--no-input",
+                stdout=StringIO(),
+                stderr=StringIO()
+            )
+        except Exception as e:
+            traceback.print_exc()
+            self.stderr.write(f"failed to create migrations, {e}")
+            exit(1)
+
+    # Load migrations and get the sql statements describing the migrations.
+    def get_ddl(self):
         migration_loader = MigrationLoader(None, ignore_no_migrations=True)
         migration_loader.load_disk()
         migrations = ""
