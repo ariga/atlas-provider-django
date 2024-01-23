@@ -13,6 +13,9 @@ from django.db.backends.sqlite3.base import DatabaseWrapper as Sqlite3DatabaseWr
 from django.db.backends.sqlite3.schema import DatabaseSchemaEditor as SqliteSchemaEditor
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor as PGDatabaseSchemaEditor
 from django.db.backends.postgresql.base import DatabaseWrapper as PGDatabaseWrapper
+from django.db.backends.mysql.base import DatabaseWrapper as MySQLDatabaseWrapper
+from django.db.backends.mysql.schema import DatabaseSchemaEditor as MySQLDatabaseSchemaEditor
+from django.db.backends.mysql.features import DatabaseFeatures as MySQLDatabaseFeatures
 
 
 class Dialect(str, Enum):
@@ -48,21 +51,49 @@ class MockPGDatabaseSchemaEditor(PGDatabaseSchemaEditor):
         return super(PGDatabaseSchemaEditor, self).execute(sql, params)
 
 
+class MockMySQLDatabaseSchemaEditor(MySQLDatabaseSchemaEditor):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    # Override the method of MySQLDatabaseSchemaEditor since it checks the storage engine.
+    # We assume that the storage engine is InnoDB.
+    def _field_should_be_indexed(self, model, field):
+        if not super(MySQLDatabaseSchemaEditor, self)._field_should_be_indexed(model, field):
+            return False
+        if field.get_internal_type() == "ForeignKey" and field.db_constraint:
+            return False
+        return not self._is_limited_data_type(field)
+
+
+class MockMySQLDatabaseFeatures(MySQLDatabaseFeatures):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def has_native_uuid_field(self):
+        return False
+
+
 # Returns the database connection wrapper for the given dialect.
 # Mocks some methods in order to get the sql statements without db connection.
 def get_connection_by_dialect(dialect):
+    conn = None
     if dialect == Dialect.sqlite:
         conn = Sqlite3DatabaseWrapper({
             "ENGINE": "django.db.backends.sqlite3",
         }, "sqlite3")
         conn.SchemaEditorClass = MockSqliteSchemaEditor
-        return conn
     elif dialect == Dialect.postgresql:
         conn = PGDatabaseWrapper({
             "ENGINE": "django.db.backends.postgresql",
         }, "postgresql")
         conn.SchemaEditorClass = MockPGDatabaseSchemaEditor
-        return conn
+    elif dialect == Dialect.mysql:
+        conn = MySQLDatabaseWrapper({
+            "ENGINE": "django.db.backends.mysql",
+        }, "mysql")
+        conn.SchemaEditorClass = MockMySQLDatabaseSchemaEditor
+        conn.features = MockMySQLDatabaseFeatures
+    return conn
 
 
 # MockMigrationLoader loads migrations without db connection.
