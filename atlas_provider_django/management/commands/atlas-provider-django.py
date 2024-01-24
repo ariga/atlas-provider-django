@@ -177,7 +177,7 @@ class Command(BaseCommand):
         global current_dialect
         current_dialect = options.get("dialect", Dialect.sqlite)
         selected_apps = options.get("apps", None)
-        print(self.get_ddl(selected_apps))
+        return self.get_ddl(selected_apps)
 
     # Load migrations and get the sql statements describing the migrations.
     def get_ddl(self, selected_apps):
