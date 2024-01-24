@@ -26,6 +26,8 @@ jobs:
         run: poetry install
       - name: Run lint
         run: poetry run ruff --output-format=github .
+      - name: Run unit tests
+        run: poetry run python manage.py test
 
   integration-tests:
     strategy:
