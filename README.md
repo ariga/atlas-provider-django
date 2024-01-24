@@ -8,7 +8,7 @@ Load [Django](https://www.djangoproject.com/) models into an [Atlas](https://atl
 
 ### Installation
 
-Install Atlas from macOS or Linux by running:
+Install Atlas for macOS or Linux by running:
 ```bash
 curl -sSf https://atlasgo.sh | sh
 ```
