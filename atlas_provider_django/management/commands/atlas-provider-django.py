@@ -28,7 +28,7 @@ class Dialect(str, Enum):
         return self.value
 
 
-current_dialect = Dialect.sqlite
+current_dialect = Dialect.mysql
 
 
 class MockSqliteSchemaEditor(SqliteSchemaEditor):
@@ -166,20 +166,23 @@ class Command(BaseCommand):
     help = "Import Django migrations into Atlas"
 
     def add_arguments(self, parser):
-        parser.add_argument("--dialect", type=Dialect, choices=list(Dialect), help="The database dialect to use.",
-                            default=Dialect.sqlite)
+        parser.add_argument("--dialect", type=Dialect, choices=list(Dialect),
+                            help="The database dialect to use, Default: mysql",
+                            default=Dialect.mysql)
+        parser.add_argument("--apps", nargs="+", help="List of apps to get ddl for.")
 
     SqlMigrateCommand.handle = mock_handle
 
     def handle(self, *args, **options):
         global current_dialect
         current_dialect = options.get("dialect", Dialect.sqlite)
-        print(self.get_ddl())
+        selected_apps = options.get("apps", None)
+        print(self.get_ddl(selected_apps))
 
     # Load migrations and get the sql statements describing the migrations.
-    def get_ddl(self):
+    def get_ddl(self, selected_apps):
         ddl = ""
-        for app_name, migration_name in get_migrations():
+        for app_name, migration_name in get_migrations(selected_apps):
             try:
                 out = StringIO()
                 call_command(
