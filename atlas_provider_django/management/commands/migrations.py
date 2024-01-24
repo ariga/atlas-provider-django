@@ -20,5 +20,9 @@ def get_migrations(apps=None):
     for app_label, app_migrations in changes.items():
         if apps and app_label not in apps:
             continue
-        migrations[(app_label, app_migrations[0].name)] = app_migrations[0]
+        migration = app_migrations[0]
+        for dep in migration.dependencies:
+            if dep[0] == "__setting__":
+                migration.dependencies.remove(dep)
+        migrations[(app_label, migration.name)] = migration
     return migrations

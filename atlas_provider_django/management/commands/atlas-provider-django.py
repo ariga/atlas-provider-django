@@ -119,13 +119,17 @@ class MockMigrationLoader(MigrationLoader):
         super().__init__(connection, replace_migrations, load)
 
     def build_graph(self):
-        self.disk_migrations = get_migrations()
+        self.load_disk()
+        manual_migrations = get_migrations()
+        self.disk_migrations = {**self.disk_migrations, **manual_migrations}
         self.applied_migrations = {}
-        self.unmigrated_apps = set()
-        self.migrated_apps = set()
         self.graph = MigrationGraph()
         for key, migration in self.disk_migrations.items():
             self.graph.add_node(key, migration)
+        for key, migration in self.disk_migrations.items():
+            self.add_internal_dependencies(key, migration)
+        for key, migration in self.disk_migrations.items():
+            self.add_external_dependencies(key, migration)
         self.graph.validate_consistency()
         self.graph.ensure_not_cyclic()
 
