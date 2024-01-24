@@ -39,3 +39,4 @@ jobs:
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
           ignore_dev_requirements: "yes"
+          extra_build_dependency_packages: "default-libmysqlclient-dev"
