@@ -34,6 +34,9 @@ jobs:
           RELEASE_VERSION: ${{ steps.set_version.outputs.tag }}
         run: |
           poetry version $RELEASE_VERSION
+      - name: install dependencies
+        run: |
+          sudo apt-get install python3-dev default-libmysqlclient-dev build-essential
       - name: Build and publish to pypi
         uses: JRubics/poetry-publish@v1.17
         with:
