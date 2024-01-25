@@ -28,7 +28,7 @@ Add the provider to your Django project's `INSTALLED_APPS` in `settings.py`:
 ```python
 INSTALLED_APPS = [
     ...,
-    'altas_provider_django',
+    'atlas_provider_django',
     ...
 ]
 ```
