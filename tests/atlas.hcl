@@ -6,6 +6,7 @@ locals {
   dev_url = {
     mysql = "docker://mysql/8/dev"
     postgresql = "docker://postgres/15"
+    mssql = "docker://sqlserver/2022-latest"
     sqlite = "sqlite://?mode=memory&_fk=1"
   }[var.dialect]
 }

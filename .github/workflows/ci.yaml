@@ -32,7 +32,7 @@ jobs:
   integration-tests:
     strategy:
       matrix:
-        dialect: [ mysql, postgresql, sqlite ]
+        dialect: [ mysql, postgresql, sqlite, mssql ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,10 +55,12 @@ jobs:
         run: poetry install
       - name: Install atlas
         uses: ariga/setup-atlas@master
-      - name: Run Test as Standalone
+      - name: Run migrate diff
         working-directory: ./tests
         run: |
           atlas migrate diff --env django --var dialect=${{ matrix.dialect }}
+        env:
+          ATLAS_TOKEN: ${{ secrets.ATLAS_TOKEN }}
       - name: Verify migrations generated
         working-directory: ./tests
         run: |

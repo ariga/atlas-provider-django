@@ -41,7 +41,7 @@ data "external_schema" "django" {
     "python",
     "manage.py",
     "atlas-provider-django",
-    "--dialect", "mysql" // mariadb | postgresql | sqlite
+    "--dialect", "mysql" // mariadb | postgresql | sqlite | mssql
     // if you want to only load a subset of your app models, you can specify the apps by adding
     // "--apps", "app1", "app2", "app3"
   ]
@@ -94,6 +94,7 @@ The provider supports the following databases:
 * MariaDB
 * PostgreSQL
 * SQLite
+* Microsoft SQL Server
 
 ### Issues
 

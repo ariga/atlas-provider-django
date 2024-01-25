@@ -24,6 +24,7 @@ class Dialect(str, Enum):
     mariadb = "mariadb"
     sqlite = "sqlite"
     postgresql = "postgresql"
+    mssql = "mssql"
 
     def __str__(self):
         return self.value
@@ -110,6 +111,13 @@ def get_connection_by_dialect(dialect):
             }, "mysql")
             conn.SchemaEditorClass = MockMySQLDatabaseSchemaEditor
             conn.features = MockMariaDBDatabaseFeatures(conn)
+        case Dialect.mssql:
+            # import dynamically to avoid unixodbc not installed error on mac os for other dialects
+            from mssql.base import DatabaseWrapper as MSSQLDatabaseWrapper
+            conn = MSSQLDatabaseWrapper({
+                "ENGINE": "mssql",
+                "OPTIONS": {},
+            }, "mssql")
     return conn
 
 
@@ -158,6 +166,7 @@ class MockMigrationLoader(MigrationLoader):
 # Copied from Django's sqlmigrate command: https://github.com/django/django/blob/8a1727dc7f66db7f0131d545812f77544f35aa57/django/core/management/commands/sqlmigrate.py#L40-L83
 # Code licensed under the BSD 3-Clause License: https://github.com/django/django/blob/main/LICENSE
 def mock_handle(self, *args, **options):
+    self.output_transaction = False
     connection = get_connection_by_dialect(current_dialect)
     loader = MockMigrationLoader(connection, replace_migrations=False, load=False)
     loader.build_graph()
