@@ -18,7 +18,7 @@ See [atlasgo.io](https://atlasgo.io/getting-started#installation) for more insta
 Install the provider by running:
 
 ```bash
-pip install altas-provider-django
+pip install atlas-provider-django
 ```
 
 ### Configuration
