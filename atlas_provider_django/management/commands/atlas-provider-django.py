@@ -67,6 +67,9 @@ class MockMySQLDatabaseSchemaEditor(MySQLDatabaseSchemaEditor):
             return False
         return not self._is_limited_data_type(field)
 
+    def _supports_limited_data_type_defaults(self):
+        return True
+
 
 class MockMySQLDatabaseFeatures(MySQLDatabaseFeatures):
     def __init__(self, *args, **kwargs):
