@@ -75,6 +75,9 @@ class MockMySQLDatabaseFeatures(MySQLDatabaseFeatures):
     def has_native_uuid_field(self):
         return False
 
+    def _mysql_storage_engine(self):
+        return "InnoDB"
+
 
 class MockMariaDBDatabaseFeatures(MySQLDatabaseFeatures):
     def __init__(self, *args, **kwargs):
