@@ -10,11 +10,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.core.management.commands.sqlmigrate import Command as SqlMigrateCommand
 from django.db.backends.sqlite3.base import DatabaseWrapper as Sqlite3DatabaseWrapper
 from django.db.backends.sqlite3.schema import DatabaseSchemaEditor as SqliteSchemaEditor
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor as PGDatabaseSchemaEditor
-from django.db.backends.postgresql.base import DatabaseWrapper as PGDatabaseWrapper
-from django.db.backends.mysql.base import DatabaseWrapper as MySQLDatabaseWrapper
-from django.db.backends.mysql.schema import DatabaseSchemaEditor as MySQLDatabaseSchemaEditor
-from django.db.backends.mysql.features import DatabaseFeatures as MySQLDatabaseFeatures
 
 from atlas_provider_django.management.commands.migrations import get_migrations
 
@@ -46,50 +41,6 @@ class MockSqliteSchemaEditor(SqliteSchemaEditor):
         return super(SqliteSchemaEditor, self).__exit__(exc_type, exc_value, traceback)
 
 
-class MockPGDatabaseSchemaEditor(PGDatabaseSchemaEditor):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def execute(self, sql, params=()):
-        return super(PGDatabaseSchemaEditor, self).execute(sql, params)
-
-
-class MockMySQLDatabaseSchemaEditor(MySQLDatabaseSchemaEditor):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    # Override the method of MySQLDatabaseSchemaEditor since it checks the storage engine.
-    # We assume that the storage engine is InnoDB.
-    def _field_should_be_indexed(self, model, field):
-        if not super(MySQLDatabaseSchemaEditor, self)._field_should_be_indexed(model, field):
-            return False
-        if field.get_internal_type() == "ForeignKey" and field.db_constraint:
-            return False
-        return not self._is_limited_data_type(field)
-
-    def _supports_limited_data_type_defaults(self):
-        return True
-
-
-class MockMySQLDatabaseFeatures(MySQLDatabaseFeatures):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def has_native_uuid_field(self):
-        return False
-
-    def _mysql_storage_engine(self):
-        return "InnoDB"
-
-
-class MockMariaDBDatabaseFeatures(MySQLDatabaseFeatures):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def has_native_uuid_field(self):
-        return True
-
-
 # Returns the database connection wrapper for the given dialect.
 # Mocks some methods in order to get the sql statements without db connection.
 def get_connection_by_dialect(dialect):
@@ -101,17 +52,84 @@ def get_connection_by_dialect(dialect):
             }, "sqlite3")
             conn.SchemaEditorClass = MockSqliteSchemaEditor
         case Dialect.postgresql:
+            from django.db.backends.postgresql.base import DatabaseWrapper as PGDatabaseWrapper
+            from django.db.backends.postgresql.schema import DatabaseSchemaEditor as PGDatabaseSchemaEditor
+
+            class MockPGDatabaseSchemaEditor(PGDatabaseSchemaEditor):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+
+                def execute(self, sql, params=()):
+                    return super(PGDatabaseSchemaEditor, self).execute(sql, params)
+
             conn = PGDatabaseWrapper({
                 "ENGINE": "django.db.backends.postgresql",
             }, "postgresql")
             conn.SchemaEditorClass = MockPGDatabaseSchemaEditor
         case Dialect.mysql:
+            from django.db.backends.mysql.base import DatabaseWrapper as MySQLDatabaseWrapper
+            from django.db.backends.mysql.schema import DatabaseSchemaEditor as MySQLDatabaseSchemaEditor
+            from django.db.backends.mysql.features import DatabaseFeatures as MySQLDatabaseFeatures
+
+            class MockMySQLDatabaseSchemaEditor(MySQLDatabaseSchemaEditor):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+
+                # Override the method of MySQLDatabaseSchemaEditor since it checks the storage engine.
+                # We assume that the storage engine is InnoDB.
+                def _field_should_be_indexed(self, model, field):
+                    if not super(MySQLDatabaseSchemaEditor, self)._field_should_be_indexed(model, field):
+                        return False
+                    if field.get_internal_type() == "ForeignKey" and field.db_constraint:
+                        return False
+                    return not self._is_limited_data_type(field)
+
+                def _supports_limited_data_type_defaults(self):
+                    return True
+
+            class MockMySQLDatabaseFeatures(MySQLDatabaseFeatures):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+
+                def has_native_uuid_field(self):
+                    return False
+
+                def _mysql_storage_engine(self):
+                    return "InnoDB"
+
             conn = MySQLDatabaseWrapper({
                 "ENGINE": "django.db.backends.mysql",
             }, "mysql")
             conn.SchemaEditorClass = MockMySQLDatabaseSchemaEditor
             conn.features = MockMySQLDatabaseFeatures(conn)
         case Dialect.mariadb:
+            from django.db.backends.mysql.base import DatabaseWrapper as MySQLDatabaseWrapper
+            from django.db.backends.mysql.schema import DatabaseSchemaEditor as MySQLDatabaseSchemaEditor
+            from django.db.backends.mysql.features import DatabaseFeatures as MySQLDatabaseFeatures
+
+            class MockMySQLDatabaseSchemaEditor(MySQLDatabaseSchemaEditor):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+
+                # Override the method of MySQLDatabaseSchemaEditor since it checks the storage engine.
+                # We assume that the storage engine is InnoDB.
+                def _field_should_be_indexed(self, model, field):
+                    if not super(MySQLDatabaseSchemaEditor, self)._field_should_be_indexed(model, field):
+                        return False
+                    if field.get_internal_type() == "ForeignKey" and field.db_constraint:
+                        return False
+                    return not self._is_limited_data_type(field)
+
+                def _supports_limited_data_type_defaults(self):
+                    return True
+
+            class MockMariaDBDatabaseFeatures(MySQLDatabaseFeatures):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+
+                def has_native_uuid_field(self):
+                    return True
+
             conn = MySQLDatabaseWrapper({
                 "ENGINE": "django.db.backends.mysql",
             }, "mysql")

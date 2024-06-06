@@ -33,6 +33,15 @@ jobs:
     strategy:
       matrix:
         dialect: [ mysql, postgresql, sqlite, mssql ]
+        include:
+          - dialect: mysql
+            deps: [mysqlclient]
+          - dialect: postgresql
+            deps: [psycopg2]
+          - dialect: sqlite
+            deps: []
+          - dialect: mssql
+            deps: [mssql-django, pyodbc]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,6 +62,9 @@ jobs:
           key: venv-${{ hashFiles('poetry.lock') }}
       - name: Install the project dependencies
         run: poetry install
+      - name: Install specific dialect dependencies
+        if: ${{ matrix.deps != [] }}
+        run: poetry add ${{ join(matrix.deps, ' ') }}
       - name: Install atlas
         uses: ariga/setup-atlas@master
       - name: Run migrate diff
