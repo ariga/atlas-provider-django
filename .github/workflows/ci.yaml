@@ -24,6 +24,8 @@ jobs:
           key: venv-${{ hashFiles('poetry.lock') }}
       - name: Install the project dependencies
         run: poetry install
+      - name: Install specific test mysql dependencies
+        run: poetry add mysqlclient
       - name: Run lint
         run: poetry run ruff --output-format=github .
       - name: Run unit tests
@@ -39,7 +41,7 @@ jobs:
           - dialect: postgresql
             deps: [psycopg2]
           - dialect: sqlite
-            deps: []
+            deps: ''
           - dialect: mssql
             deps: [mssql-django, pyodbc]
     runs-on: ubuntu-latest
@@ -63,7 +65,7 @@ jobs:
       - name: Install the project dependencies
         run: poetry install
       - name: Install specific dialect dependencies
-        if: ${{ matrix.deps != [] }}
+        if: ${{ matrix.deps != '' }}
         run: poetry add ${{ join(matrix.deps, ' ') }}
       - name: Install atlas
         uses: ariga/setup-atlas@master
