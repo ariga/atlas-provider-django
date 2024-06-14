@@ -11,10 +11,6 @@ django = ">=4.2"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.1.14"
-psycopg2-binary = "^2.9.9"
-mysqlclient = "^2.2.1"
-mssql-django = "^1.4"
-pyodbc = "^5.0.1"
 
 [build-system]
 requires = ["poetry-core"]
