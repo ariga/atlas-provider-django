@@ -14,7 +14,7 @@ CREATE TABLE "public"."app1_album" (
   "num_stars" integer NOT NULL,
   "artist_id" bigint NOT NULL,
   PRIMARY KEY ("id"),
-  CONSTRAINT "app1_album_artist_id_aed0987a_fk_app1_musician_id" FOREIGN KEY ("artist_id") REFERENCES "public"."app1_musician" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
+  CONSTRAINT "app1_album_artist_id_aed0987a_fk_app1_musician_id" FOREIGN KEY ("artist_id") REFERENCES "public"."app1_musician" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED
 );
 -- Create index "app1_album_artist_id_aed0987a" to table: "app1_album"
 CREATE INDEX "app1_album_artist_id_aed0987a" ON "public"."app1_album" ("artist_id");
@@ -34,7 +34,7 @@ CREATE TABLE "public"."app2_blog" (
   "num_stars" integer NOT NULL,
   "author_id" bigint NOT NULL,
   PRIMARY KEY ("id"),
-  CONSTRAINT "app2_blog_author_id_1675e606_fk_app2_user_id" FOREIGN KEY ("author_id") REFERENCES "public"."app2_user" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
+  CONSTRAINT "app2_blog_author_id_1675e606_fk_app2_user_id" FOREIGN KEY ("author_id") REFERENCES "public"."app2_user" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED
 );
 -- Create index "app2_blog_author_id_1675e606" to table: "app2_blog"
 CREATE INDEX "app2_blog_author_id_1675e606" ON "public"."app2_blog" ("author_id");
