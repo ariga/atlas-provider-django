@@ -64,6 +64,16 @@ env "django" {
 
 ### Usage
 
+### Inspect
+
+You can use the `atlas schema inspect` command to visualize your Django schema in Atlas Cloud.
+
+```bash
+atlas schema inspect -w --env django --url env://src
+```
+
+![inspect example](https://atlasgo.io/u/cloud/images/erd-example-v1.png)
+
 #### Apply
 
 You can use the `atlas schema apply` command to plan and apply a migration of your database to your current Django schema.
