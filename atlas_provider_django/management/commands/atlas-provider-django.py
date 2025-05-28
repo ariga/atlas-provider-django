@@ -1,6 +1,9 @@
+import ast
+import inspect
 import traceback
 from enum import Enum
 from io import StringIO
+from pathlib import Path
 
 from django.apps import apps
 from django.core.management import call_command
@@ -230,7 +233,40 @@ class Command(BaseCommand):
         global current_dialect
         current_dialect = options.get("dialect", Dialect.sqlite)
         selected_apps = options.get("apps", None)
-        return self.get_ddl(selected_apps)
+        pos_directives = self.generate_pos_directives(selected_apps)
+        ddl = self.get_ddl(selected_apps)
+        return pos_directives + "\n" + ddl
+
+    # Generate the position directives for the models in the selected apps.
+    def generate_pos_directives(self, selected_apps):
+        directives = []
+        for model in apps.get_models():
+            app_label = model._meta.app_label
+            if selected_apps and app_label not in selected_apps:
+                continue
+            try:
+                file_path = inspect.getfile(model)
+            except TypeError:
+                continue
+            with open(file_path, "r") as f:
+                source = f.read()
+            tree = ast.parse(source, filename=file_path)
+
+            class ModelVisitor(ast.NodeVisitor):
+                def visit_ClassDef(self, node):
+                    if node.name == model.__name__:
+                        rel_file = Path(file_path).relative_to(Path.cwd())
+                        start_line = node.lineno
+                        col = node.col_offset
+                        end_line = getattr(node, "end_lineno", "?")
+                        end_col = getattr(node, "end_col_offset", "?")
+                        table_name = model._meta.db_table
+                        directive = f"-- atlas:pos {table_name}[type=table] {rel_file}:{start_line}:{col+1}-{end_line}:{end_col+1}"
+                        directives.append(directive)
+                    self.generic_visit(node)
+
+            ModelVisitor().visit(tree)
+        return "\n".join(directives)
 
     # Load migrations and get the sql statements describing the migrations.
     def get_ddl(self, selected_apps):

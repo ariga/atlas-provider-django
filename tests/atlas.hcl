@@ -28,6 +28,11 @@ env "django" {
   migration {
     dir = "file://migrations/${var.dialect}"
   }
+  diff {
+    skip {
+      rename_constraint = true
+    }
+  }
   format {
     migrate {
       diff = "{{ sql . \"  \" }}"
