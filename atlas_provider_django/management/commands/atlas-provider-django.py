@@ -235,7 +235,7 @@ class Command(BaseCommand):
         selected_apps = options.get("apps", None)
         pos_directives = self.generate_pos_directives(selected_apps)
         ddl = self.get_ddl(selected_apps)
-        return pos_directives + "\n" + ddl
+        return pos_directives + "\n\n" + ddl
 
     # Generate the position directives for the models in the selected apps.
     def generate_pos_directives(self, selected_apps):
