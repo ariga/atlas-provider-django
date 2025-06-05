@@ -1,5 +1,6 @@
 -- atlas:pos app1_musician[type=table] tests/app1/models.py:4:1-7:50
 -- atlas:pos app1_album[type=table] tests/app1/models.py:10:1-14:38
+
 --
 -- Create model Musician
 --
