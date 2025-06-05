@@ -35,8 +35,8 @@ jobs:
         run: |
           poetry version $RELEASE_VERSION
       - name: Build and publish to pypi
-        uses: JRubics/poetry-publish@v1.17
+        uses: JRubics/poetry-publish@v2.1
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
-          ignore_dev_requirements: "yes"
+          poetry_install_options: "--without dev"
           extra_build_dependency_packages: "default-libmysqlclient-dev"
