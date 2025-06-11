@@ -248,6 +248,8 @@ class Command(BaseCommand):
                 file_path = inspect.getfile(model)
             except TypeError:
                 continue
+            if not Path(file_path).is_relative_to(Path.cwd()):
+                continue
             with open(file_path, "r") as f:
                 source = f.read()
             tree = ast.parse(source, filename=file_path)
