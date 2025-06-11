@@ -3,7 +3,6 @@ import inspect
 import traceback
 from enum import Enum
 from io import StringIO
-from pathlib import Path
 
 from django.apps import apps
 from django.core.management import call_command
@@ -248,8 +247,6 @@ class Command(BaseCommand):
                 file_path = inspect.getfile(model)
             except TypeError:
                 continue
-            if not Path(file_path).is_relative_to(Path.cwd()):
-                continue
             with open(file_path, "r") as f:
                 source = f.read()
             tree = ast.parse(source, filename=file_path)
@@ -257,13 +254,12 @@ class Command(BaseCommand):
             class ModelVisitor(ast.NodeVisitor):
                 def visit_ClassDef(self, node):
                     if node.name == model.__name__:
-                        rel_file = Path(file_path).relative_to(Path.cwd())
                         start_line = node.lineno
                         col = node.col_offset
                         end_line = getattr(node, "end_lineno", "?")
                         end_col = getattr(node, "end_col_offset", "?")
                         table_name = model._meta.db_table
-                        directive = f"-- atlas:pos {table_name}[type=table] {rel_file}:{start_line}:{col+1}-{end_line}:{end_col+1}"
+                        directive = f"-- atlas:pos {table_name}[type=table] {file_path}:{start_line}:{col+1}-{end_line}:{end_col+1}"
                         directives.append(directive)
                     self.generic_visit(node)
 
