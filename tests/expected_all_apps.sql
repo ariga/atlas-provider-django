@@ -1,7 +1,7 @@
--- atlas:pos app1_musician[type=table] tests/app1/models.py:4:1-7:50
--- atlas:pos app1_album[type=table] tests/app1/models.py:10:1-14:38
--- atlas:pos app2_user[type=table] tests/app2/models.py:4:1-7:44
--- atlas:pos app2_blog[type=table] tests/app2/models.py:10:1-14:38
+-- atlas:pos app1_musician[type=table] [ABSOLUTE]/tests/app1/models.py:4:1-7:50
+-- atlas:pos app1_album[type=table] [ABSOLUTE]/tests/app1/models.py:10:1-14:38
+-- atlas:pos app2_user[type=table] [ABSOLUTE]/tests/app2/models.py:4:1-7:44
+-- atlas:pos app2_blog[type=table] [ABSOLUTE]/tests/app2/models.py:10:1-14:38
 
 --
 -- Create model Musician
