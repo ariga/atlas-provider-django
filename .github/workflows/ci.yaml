@@ -29,6 +29,7 @@ jobs:
       - name: Run lint
         run: poetry run ruff --output-format=github .
       - name: Run unit tests
+        working-directory: ./tests
         run: poetry run python manage.py test
 
   integration-tests:
@@ -72,7 +73,7 @@ jobs:
       - name: Run migrate diff
         working-directory: ./tests
         run: |
-          atlas migrate diff --env django --var dialect=${{ matrix.dialect }}
+          atlas migrate diff --env django --var dialect=${{ matrix.dialect }} --app app1 --app app2
         env:
           ATLAS_TOKEN: ${{ secrets.ATLAS_TOKEN }}
       - name: Verify migrations generated

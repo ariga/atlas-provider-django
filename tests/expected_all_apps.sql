@@ -1,7 +1,7 @@
--- atlas:pos app1_musician[type=table] tests/app1/models.py:4:1-7:50
--- atlas:pos app1_album[type=table] tests/app1/models.py:10:1-14:38
--- atlas:pos app2_user[type=table] tests/app2/models.py:4:1-7:44
--- atlas:pos app2_blog[type=table] tests/app2/models.py:10:1-14:38
+-- atlas:pos app1_musician[type=table] app1/models.py:4:1-7:50
+-- atlas:pos app1_album[type=table] app1/models.py:10:1-14:38
+-- atlas:pos app2_user[type=table] app2/models.py:4:1-7:44
+-- atlas:pos app2_blog[type=table] app2/models.py:10:1-14:38
 
 --
 -- Create model Musician
@@ -21,3 +21,12 @@ CREATE TABLE `app2_user` (`id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY, `firs
 --
 CREATE TABLE `app2_blog` (`id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY, `name` varchar(100) NOT NULL, `created_at` date NOT NULL, `num_stars` integer NOT NULL, `author_id` bigint NOT NULL);
 ALTER TABLE `app2_blog` ADD CONSTRAINT `app2_blog_author_id_1675e606_fk_app2_user_id` FOREIGN KEY (`author_id`) REFERENCES `app2_user` (`id`);
+--
+-- Create model UserClone
+--
+CREATE TABLE `app3_userclone` (`id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY, `first_name` varchar(50) NOT NULL, `last_name` varchar(50) NULL, `roll` varchar(100) NOT NULL);
+--
+-- Create model BlogClone
+--
+CREATE TABLE `app3_blogclone` (`id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY, `name` varchar(100) NOT NULL, `created_at` date NOT NULL, `num_stars` integer NOT NULL, `author_id` bigint NOT NULL);
+ALTER TABLE `app3_blogclone` ADD CONSTRAINT `app3_blogclone_author_id_0107276f_fk_app3_userclone_id` FOREIGN KEY (`author_id`) REFERENCES `app3_userclone` (`id`);

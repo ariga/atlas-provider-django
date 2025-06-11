@@ -1,4 +1,4 @@
-INSTALLED_APPS = ["atlas_provider_django", "tests.app1", "tests.app2"]
+INSTALLED_APPS = ["atlas_provider_django", "tests.app1", "tests.app2", "tests_outdir.app3"]
 
 # if there are no databases defined, the tests tear down will fail
 DATABASES = {
